@@ -17,6 +17,9 @@ const orderRoutes = require('./routes/orderRoutes');
 
 const app = express();
 
+// Configurar trust proxy
+app.set('trust proxy', 1);
+
 // =====================
 // Conectar a MongoDB
 // =====================
