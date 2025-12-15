@@ -80,12 +80,12 @@ const getProductById = async (req, res, next) => {
 const createProduct = async (req, res, next) => {
   try {
     const tenantId = req.tenantId;
-    const { name, description, price, stock } = req.body;
+    const { name, description, price, stock, category, image, brand, sku } = req.body;
 
     // Validar campos requeridos
-    if (!name || price === undefined || stock === undefined) {
+    if (!name || price === undefined || stock === undefined || !category || !image) {
       return res.status(400).json({
-        message: 'Faltan campos requeridos: name, price, stock',
+        message: 'Faltan campos requeridos: name, price, stock, category, image',
         statusCode: 400
       });
     }
@@ -96,6 +96,10 @@ const createProduct = async (req, res, next) => {
       description,
       price,
       stock,
+      category,
+      image,
+      brand,
+      sku,
       isActive: true
     });
 
@@ -117,7 +121,7 @@ const updateProduct = async (req, res, next) => {
   try {
     const tenantId = req.tenantId;
     const { id } = req.params;
-    const { name, description, price, stock, isActive } = req.body;
+    const { name, description, price, stock, isActive, category, image, brand, sku } = req.body;
 
     const product = await Product.findOne({ _id: id, tenantId });
 
@@ -134,6 +138,10 @@ const updateProduct = async (req, res, next) => {
     if (price !== undefined) product.price = price;
     if (stock !== undefined) product.stock = stock;
     if (isActive !== undefined) product.isActive = isActive;
+    if (category !== undefined) product.category = category;
+    if (image !== undefined) product.image = image;
+    if (brand !== undefined) product.brand = brand;
+    if (sku !== undefined) product.sku = sku;
 
     await product.save();
 

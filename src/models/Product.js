@@ -15,6 +15,23 @@ const productSchema = new mongoose.Schema({
     required: [true, 'El nombre del producto es requerido'],
     trim: true
   },
+  category: {
+    type: String,
+    required: [true, 'La categoría es requerida'],
+    enum: ['consolas', 'videojuegos', 'accesorios', 'juegos-mesa', 'varios']
+  },
+  image: {
+    type: String,
+    required: [true, 'La imagen es requerida']
+  },
+  brand: {
+    type: String
+  },
+  sku: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
   description: {
     type: String,
     trim: true

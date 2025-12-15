@@ -62,6 +62,8 @@ const { authenticate, requireRole } = require('../middlewares/authMiddleware');
  *               - name
  *               - price
  *               - stock
+ *               - category
+ *               - image
  *             properties:
  *               name:
  *                 type: string
@@ -75,6 +77,19 @@ const { authenticate, requireRole } = require('../middlewares/authMiddleware');
  *               stock:
  *                 type: number
  *                 example: 50
+ *               category:
+ *                 type: string
+ *                 enum: [consolas, videojuegos, accesorios, juegos-mesa, varios]
+ *                 example: consolas
+ *               image:
+ *                 type: string
+ *                 example: https://example.com/image.jpg
+ *               brand:
+ *                 type: string
+ *                 example: Apple
+ *               sku:
+ *                 type: string
+ *                 example: PROD-001
  *     responses:
  *       201:
  *         description: Producto creado exitosamente
@@ -136,6 +151,15 @@ router.get('/', extractTenant, getProducts);
  *                 type: number
  *               stock:
  *                 type: number
+ *               category:
+ *                 type: string
+ *                 enum: [consolas, videojuegos, accesorios, juegos-mesa, varios]
+ *               image:
+ *                 type: string
+ *               brand:
+ *                 type: string
+ *               sku:
+ *                 type: string
  *               isActive:
  *                 type: boolean
  *     responses:
@@ -172,24 +196,24 @@ router.get('/', extractTenant, getProducts);
  */
 router.get('/:id', extractTenant, getProductById);
 
-router.post('/', 
-  extractTenant, 
-  authenticate, 
-  requireRole('admin'), 
+router.post('/',
+  extractTenant,
+  authenticate,
+  requireRole('admin'),
   createProduct
 );
 
-router.put('/:id', 
-  extractTenant, 
-  authenticate, 
-  requireRole('admin'), 
+router.put('/:id',
+  extractTenant,
+  authenticate,
+  requireRole('admin'),
   updateProduct
 );
 
-router.delete('/:id', 
-  extractTenant, 
-  authenticate, 
-  requireRole('admin'), 
+router.delete('/:id',
+  extractTenant,
+  authenticate,
+  requireRole('admin'),
   deleteProduct
 );
 
