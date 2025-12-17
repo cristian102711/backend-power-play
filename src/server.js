@@ -7,6 +7,8 @@ const config = require('./config/env');
 const connectDB = require('./config/database');
 const errorHandler = require('./middlewares/errorHandler');
 const { swaggerUi, swaggerSpec } = require('./config/swagger');
+const testRoutes = require("./routes/testRoutes");
+
 
 // Importar rutas
 const authRoutes = require('./routes/authRoutes');
@@ -16,6 +18,9 @@ const cartRoutes = require('./routes/cartRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 
 const app = express();
+
+app.use("/api/test", testRoutes);
+
 
 // Configurar trust proxy
 app.set('trust proxy', 1);
