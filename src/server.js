@@ -33,9 +33,12 @@ connectDB();
 app.use(helmet());
 
 // CORS
+// CORS
 app.use(cors({
   origin: config.CORS_ORIGIN,
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
 // Logger HTTP con Morgan
@@ -118,17 +121,19 @@ app.use(errorHandler);
 // =====================
 const PORT = config.PORT;
 
-app.listen(PORT, () => {
-  console.log(`
-  ╔═══════════════════════════════════════════════════╗
-  ║                                                   ║
-  ║   🚀 Server running on port ${PORT}                ║
-  ║   📦 Environment: ${config.NODE_ENV.padEnd(27)} ║
-  ║   🔗 http://localhost:${PORT}                      ║
-  ║                                                   ║
-  ╚═══════════════════════════════════════════════════╝
-  `);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`
+    ╔═══════════════════════════════════════════════════╗
+    ║                                                   ║
+    ║   🚀 Server running on port ${PORT}                ║
+    ║   📦 Environment: ${config.NODE_ENV.padEnd(27)} ║
+    ║   🔗 http://localhost:${PORT}                      ║
+    ║                                                   ║
+    ╚═══════════════════════════════════════════════════╝
+    `);
+  });
+}
 
 // Manejo de errores no capturados
 process.on('unhandledRejection', (err) => {
