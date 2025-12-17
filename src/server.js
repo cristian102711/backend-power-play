@@ -3,12 +3,13 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const mongoose = require('mongoose');
+
 const config = require('./config/env');
 const connectDB = require('./config/database');
 const errorHandler = require('./middlewares/errorHandler');
 const { swaggerUi, swaggerSpec } = require('./config/swagger');
-const testRoutes = require("./routes/testRoutes");
-
+const testRoutes = require('./routes/testRoutes');
 
 // Importar rutas
 const authRoutes = require('./routes/authRoutes');
@@ -19,10 +20,9 @@ const orderRoutes = require('./routes/orderRoutes');
 
 const app = express();
 
-app.use("/api/test", testRoutes);
-
-
-// Configurar trust proxy
+// =====================
+// Trust proxy (Vercel)
+// =====================
 app.set('trust proxy', 1);
 
 // =====================
@@ -34,10 +34,9 @@ connectDB();
 // Middlewares Globales
 // =====================
 
-// Seguridad con Helmet
+// Seguridad
 app.use(helmet());
 
-// CORS
 // CORS
 app.use(cors({
   origin: config.CORS_ORIGIN,
@@ -46,18 +45,18 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
-// Logger HTTP con Morgan
+// Logger
 if (config.NODE_ENV === 'development') {
-  app.use(morgan('dev')); // Formato colorido para desarrollo
+  app.use(morgan('dev'));
 } else {
-  app.use(morgan('combined')); // Formato Apache para producción
+  app.use(morgan('combined'));
 }
 
-// Rate limiting - prevenir ataques de fuerza bruta
+// Rate limit
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // límite de 100 requests por windowMs
-  message: 'Demasiadas peticiones desde esta IP, por favor intenta más tarde.'
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: 'Demasiadas peticiones desde esta IP, intenta más tarde.'
 });
 app.use('/api/', limiter);
 
@@ -66,23 +65,38 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // =====================
-// Rutas
+// Health check REAL
 // =====================
-
-// Health check
 app.get('/health', (req, res) => {
+  const mongoState = mongoose.connection.readyState;
+
+  /*
+    0 = disconnected
+    1 = connected
+    2 = connecting
+    3 = disconnecting
+  */
+
   res.status(200).json({
-    success: true,
-    message: 'Server is running',
+    success: mongoState === 1,
+    server: 'running',
+    mongoState,
+    mongoStatus:
+      mongoState === 1
+        ? 'MongoDB conectado'
+        : 'MongoDB NO conectado',
     timestamp: new Date().toISOString()
   });
 });
 
 // =====================
-// Documentación Swagger
+// Rutas de prueba
 // =====================
+app.use('/api/test', testRoutes);
 
-// Configuración especial para Vercel/producción
+// =====================
+// Swagger
+// =====================
 const swaggerUiOptions = {
   customCss: '.swagger-ui .topbar { display: none }',
   customSiteTitle: 'E-Commerce API Docs',
@@ -91,24 +105,26 @@ const swaggerUiOptions = {
   }
 };
 
-// Middleware de Swagger UI - Compatible con Vercel
 app.use('/api-docs', swaggerUi.serve);
 app.get('/api-docs', swaggerUi.setup(swaggerSpec, swaggerUiOptions));
 
-// Endpoint para obtener la especificación JSON
 app.get('/api-docs.json', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   res.send(swaggerSpec);
 });
 
+// =====================
 // API Routes
+// =====================
 app.use('/api/auth', authRoutes);
 app.use('/api/tenants', tenantRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 
+// =====================
 // Ruta 404
+// =====================
 app.use('*', (req, res) => {
   res.status(404).json({
     success: false,
@@ -117,12 +133,12 @@ app.use('*', (req, res) => {
 });
 
 // =====================
-// Manejo de Errores
+// Manejo de errores
 // =====================
 app.use(errorHandler);
 
 // =====================
-// Iniciar Servidor
+// Iniciar servidor (local)
 // =====================
 const PORT = config.PORT;
 
@@ -133,18 +149,18 @@ if (require.main === module) {
     ║                                                   ║
     ║   🚀 Server running on port ${PORT}                ║
     ║   📦 Environment: ${config.NODE_ENV.padEnd(27)} ║
-    ║   🔗 http://localhost:${PORT}                      ║
     ║                                                   ║
     ╚═══════════════════════════════════════════════════╝
     `);
   });
 }
 
-// Manejo de errores no capturados
+// =====================
+// Errores no capturados
+// =====================
 process.on('unhandledRejection', (err) => {
   console.error('❌ Unhandled Rejection:', err);
   process.exit(1);
 });
 
 module.exports = app;
-
